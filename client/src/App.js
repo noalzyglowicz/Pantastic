@@ -1,34 +1,296 @@
-import React from "react";
-import logo from "./logo.svg";
+// function App() {
+//   const [data, setData] = React.useState(null);
+
+//   React.useEffect(() => {
+//     fetch("/api")
+//       .then((res) => res.json())
+//       .then((data) => setData(data.message));
+//   }, []);
+
+//The code works but I apologize for how potato the code/component/function structure is at the moment lol
+
 import "./App.css";
 
+import React, { useEffect, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+
+function tempColor(value) {
+  var RGB = { R: 0, G: 0, B: 0 };
+
+  // y = mx + b
+  // m = 4
+  // x = value
+  // y = RGB._
+  if (0 <= value && value <= 1 / 8) {
+    RGB.R = 0;
+    RGB.G = 0;
+    RGB.B = 4 * value + 0.5; // .5 - 1 // b = 1/2
+  } else if (1 / 8 < value && value <= 3 / 8) {
+    RGB.R = 0;
+    RGB.G = 4 * value - 0.5; // 0 - 1 // b = - 1/2
+    RGB.B = 1; // small fix
+  } else if (3 / 8 < value && value <= 5 / 8) {
+    RGB.R = 4 * value - 1.5; // 0 - 1 // b = - 3/2
+    RGB.G = 1;
+    RGB.B = -4 * value + 2.5; // 1 - 0 // b = 5/2
+  } else if (5 / 8 < value && value <= 7 / 8) {
+    RGB.R = 1;
+    RGB.G = -4 * value + 3.5; // 1 - 0 // b = 7/2
+    RGB.B = 0;
+  } else if (7 / 8 < value && value <= 1) {
+    RGB.R = -4 * value + 4.5; // 1 - .5 // b = 9/2
+    RGB.G = 0;
+    RGB.B = 0;
+  } else {
+    // should never happen - value > 1
+    RGB.R = 0.5;
+    RGB.G = 0;
+    RGB.B = 0;
+  }
+
+  // scale for hex conversion
+  RGB.R *= 15;
+  RGB.G *= 15;
+  RGB.B *= 15;
+
+  return (
+    Math.round(RGB.R).toString(16) +
+    "" +
+    Math.round(RGB.G).toString(16) +
+    "" +
+    Math.round(RGB.B).toString(16)
+  );
+}
+
+function cToF(celsius) {
+  return Math.round((celsius * 9) / 5) + 32;
+}
+
+function fToC(fahrenheit) {
+  return Math.round(((fahrenheit - 32) * 5) / 9);
+}
+
+const minTempF = 32;
+const maxTempF = 400;
+const tempRangeF = maxTempF - minTempF;
+
+const minTempC = fToC(minTempF);
+const maxTempC = fToC(maxTempF);
+const tempRangeC = maxTempC - minTempC;
+
+const newMin = 0;
+const newMax = 1;
+const newRange = newMax - newMin;
+
+function panTempTo0to1Range(OldValue, isF) {
+  let NewValue = ((OldValue - minTempC) * newRange) / tempRangeC + newMin;
+
+  if (isF) {
+    NewValue = ((OldValue - minTempF) * newRange) / tempRangeF + newMin;
+  }
+  return NewValue;
+}
+
+function numberToCSSColor(value, isF) {
+  return "#" + tempColor(panTempTo0to1Range(value, isF));
+}
+
+var blinkTab = function (message) {
+  var oldTitle = document.title /* save original title */,
+    timeoutId,
+    blink = function () {
+      document.title = document.title == message ? "Pantastic" : message;
+    } /* function to BLINK browser tab */,
+    clear = function () {
+      /* function to set title back to original */
+      clearInterval(timeoutId);
+      document.title = oldTitle;
+      window.onmousemove = null;
+      timeoutId = null;
+    };
+
+  if (!timeoutId) {
+    timeoutId = setInterval(blink, 1000);
+    window.onmousemove = clear; /* stop changing title on moving the mouse */
+  }
+};
+
 function App() {
-  const [data, setData] = React.useState(null);
+  const [temperature, setTemperature] = useState(75);
+  const [resData, setResData] = useState("101");
+  const [isF, setIsF] = useState(true); //true is fahrenheit
+  const [textTemperature, setTextTemperature] = useState(75);
+  const [color, setColor] = useState(numberToCSSColor(75, isF));
+  const [count, setCount] = useState(5);
+  const [danger, setDanger] = useState(false);
+  const [data, setData] = useState([
+    {
+      name: "Temp 1",
+      Temp: 75,
+    },
+    {
+      name: "Temp 2",
+      Temp: 100,
+    },
+    {
+      name: "Temp 3",
+      Temp: 175,
+    },
+    {
+      name: "Temp 4",
+      Temp: 130,
+    },
+  ]);
+
+  async function callBackendAPI() {
+    const response = await fetch("/express_backend");
+    const body = await response.json();
+
+    if (response.status !== 200) {
+      throw Error(body.message);
+    }
+    return body;
+  }
+
+  useEffect(() => {
+    if (temperature > 300) {
+      blinkTab("🔥Fire🔥");
+    }
+  });
 
   React.useEffect(() => {
     fetch("/api")
       .then((res) => res.json())
-      .then((data) => setData(data.message));
+      .then((data) => setResData(data.message));
   }, []);
 
+  let divStyle = {
+    color: color,
+  };
+
+  function changeTemp(value) {
+    setTextTemperature(value);
+    setColor(numberToCSSColor(value, isF));
+    setCount(count + 1);
+    setData(newDataArray(value));
+    if (value > 300) {
+      setDanger(true);
+    }
+  }
+
+  function toggleUnit() {
+    let convertFunc = cToF;
+
+    if (isF) {
+      convertFunc = fToC;
+    }
+
+    let newData = data.slice();
+    console.log(newData);
+
+    for (let i = 0; i < data.length; i++) {
+      data[i].Temp = convertFunc(data[i].Temp);
+      console.log(data[i].Temp);
+    }
+
+    setData(newData);
+    setIsF(!isF);
+    setTextTemperature(convertFunc(textTemperature));
+    console.log(newData);
+  }
+
+  function newDataArray(dataValue) {
+    let newData = data.slice();
+    newData.push({ name: "Temp " + count.toString(), Temp: dataValue });
+    return newData;
+  }
+
+  function handleChange(e) {
+    setTemperature(e.target.value);
+  }
+
+  function toggleDanger() {
+    setDanger(!danger);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>{!data ? "Loading..." : data}</p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div className="App">
+        <div id="center in middle of screen">
+          <h1>Pantastic</h1>
+          <h2>My Device</h2>
+          <div id="temp and alarm module" className="container">
+            <div className="Temp">
+              <div className="centeredTemp">
+                <p style={divStyle}>{textTemperature}</p>
+              </div>
+              <input
+                type="number"
+                id="temp"
+                name="Temp"
+                min="10"
+                max="100"
+                value={temperature}
+                onChange={handleChange}
+              ></input>
+              <button onClick={(e) => changeTemp(temperature)}>
+                Update Temp
+              </button>
+              <button onClick={toggleUnit}>
+                Toggle Unit ({isF ? "F" : "C"})
+              </button>
+            </div>
+            {danger ? (
+              <div className="alarmModule">
+                <div id="alarm icon" classname="alarm">
+                  <div>
+                    <img src="https://sakwall.com/danger.gif" width="45%"></img>
+                  </div>
+                </div>
+                <div className="stupidButton">
+                  <button className="stupidButton" onClick={toggleDanger}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <div className="colored">
+            <LineChart
+              width={500}
+              height={200}
+              data={data}
+              margin={{
+                top: 5,
+                right: 70,
+                left: -25,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis type="number" domain={isF ? [0, 400] : [0, fToC(400)]} />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="Temp"
+                stroke={color}
+                activeDot={{ r: 8 }}
+              />
+            </LineChart>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
