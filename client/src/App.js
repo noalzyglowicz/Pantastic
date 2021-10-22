@@ -125,7 +125,6 @@ var blinkTab = function (message) {
 
 function App() {
   const [temperature, setTemperature] = useState(75);
-  const [resData, setResData] = useState("101");
   const [isF, setIsF] = useState(true); //true is fahrenheit
   const [textTemperature, setTextTemperature] = useState(75);
   const [color, setColor] = useState(numberToCSSColor(75, isF));
@@ -150,27 +149,20 @@ function App() {
     },
   ]);
 
-  async function callBackendAPI() {
-    const response = await fetch("/express_backend");
-    const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message);
-    }
-    return body;
-  }
-
   useEffect(() => {
     if (temperature > 300) {
       blinkTab("🔥Fire🔥");
     }
+    // fetch("/api")
+    //   .then((res) => res.json())
+    //   .then(() => setData(newDataArray(50)));
   });
 
-  React.useEffect(() => {
-    fetch("/api")
-      .then((res) => res.json())
-      .then((data) => setResData(data.message));
-  }, []);
+  // React.useEffect(() => {
+  //   fetch("/api")
+  //     .then((res) => res.json())
+  //     .then((value) => setData(newDataArray(value)));
+  // }, []);
 
   let divStyle = {
     color: color,
@@ -252,7 +244,10 @@ function App() {
               <div className="alarmModule">
                 <div id="alarm icon" classname="alarm">
                   <div>
-                    <img src="https://sakwall.com/danger.gif" width="45%"></img>
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Achtung.svg/1200px-Achtung.svg.png"
+                      width="45%"
+                    ></img>
                   </div>
                 </div>
                 <div className="stupidButton">
