@@ -13,7 +13,7 @@ app.use(express.static(path.resolve(__dirname, "../client/build")));
 // Handle GET requests to /api route
 app.get("/api", (req, res) => {
   //res.json("Hello from server!");
-  res.send({ title: "GeeksforGeeks" });
+  res.send("GeeksforGeeks");
 });
 
 // All other GET requests not handled before will return our React app
