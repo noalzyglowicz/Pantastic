@@ -1,17 +1,9 @@
-// function App() {
-//   const [data, setData] = React.useState(null);
-
-//   React.useEffect(() => {
-//     fetch("/api")
-//       .then((res) => res.json())
-//       .then((data) => setData(data.message));
-//   }, []);
-
 //The code works but I apologize for how potato the code/component/function structure is at the moment lol
 
 import "./App.css";
 
 import React, { useEffect, useState } from "react";
+import { useEffectOnce, useInterval } from "react-use";
 import {
   LineChart,
   Line,
@@ -21,6 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import axios from "axios";
 
 function tempColor(value) {
   var RGB = { R: 0, G: 0, B: 0 };
@@ -148,31 +141,43 @@ function App() {
       Temp: 130,
     },
   ]);
+  //const [sampleData, setSampleData] = useState(0);
+
+  // function updateText() {
+  //   setSampleData(sampleData + 1);
+  // }
+
+  // let nIntervId;
+  // nIntervId = setInterval(() => updateText(), 2000);
+
+  // useEffectOnce(() => {
+  //   nIntervId = setInterval(() => updateText(), 2000);
+  // });
 
   useEffect(() => {
     if (temperature > 300) {
       blinkTab("🔥Fire🔥");
     }
-    // fetch("/api")
-    //   .then((res) => res.json())
-    //   .then(() => setData(newDataArray(50)));
   });
 
-  // React.useEffect(() => {
-  //   fetch("/api")
-  //     .then((res) => res.json())
-  //     .then((value) => setData(newDataArray(value)));
-  // }, []);
+  useInterval(async () => updateData(), 2000);
 
   let divStyle = {
     color: color,
   };
 
-  function changeTemp(value) {
+  async function updateData() {
+    const res = await axios.get("/dataRetrieve");
+    setData(res.data);
+    if (res.data.length > data.length) {
+      updateDisplay(res.data[res.data.length - 1].Temp);
+    }
+  }
+
+  function updateDisplay(value) {
     setTextTemperature(value);
     setColor(numberToCSSColor(value, isF));
     setCount(count + 1);
-    setData(newDataArray(value));
     if (value > 300) {
       setDanger(true);
     }
@@ -199,11 +204,11 @@ function App() {
     console.log(newData);
   }
 
-  function newDataArray(dataValue) {
-    let newData = data.slice();
-    newData.push({ name: "Temp " + count.toString(), Temp: dataValue });
-    return newData;
-  }
+  // function newDataArray(dataValue) {
+  //   let newData = data.slice();
+  //   newData.push({ name: "Temp " + count.toString(), Temp: dataValue });
+  //   return newData;
+  // }
 
   function handleChange(e) {
     setTemperature(e.target.value);
@@ -233,11 +238,14 @@ function App() {
                 value={temperature}
                 onChange={handleChange}
               ></input>
-              <button onClick={(e) => changeTemp(temperature)}>
+              <button onClick={(e) => updateDisplay(temperature)}>
                 Update Temp
               </button>
               <button onClick={toggleUnit}>
                 Toggle Unit ({isF ? "F" : "C"})
+              </button>
+              <button className="dataButton" onClick={updateData}>
+                Console Log Data
               </button>
             </div>
             {danger ? (

@@ -7,13 +7,51 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
+let data = [
+  {
+    name: "Temp 1",
+    Temp: 75,
+  },
+  {
+    name: "Temp 2",
+    Temp: 100,
+  },
+  {
+    name: "Temp 3",
+    Temp: 175,
+  },
+  {
+    name: "Temp 4",
+    Temp: 130,
+  },
+];
+
 // Have Node serve the files for our built React app
 app.use(express.static(path.resolve(__dirname, "../client/build")));
 
-// Handle GET requests to /api route
-app.get("/api", (req, res) => {
-  //res.json("Hello from server!");
-  res.send("GeeksforGeeks");
+let options = {
+  type: "text/plain",
+};
+
+app.use(express.text([]));
+app.use(express.json([]));
+app.use(express.raw([options]));
+app.use(express.urlencoded([]));
+
+//The real post
+app.post("/api", (req, res) => {
+  data.push({
+    name: "Temp 1",
+    Temp: parseInt(req.body),
+  });
+  res.json({
+    //requestBodyPostHeaders: req.headers,
+    requestBodyPostBody: req.body,
+  });
+});
+
+app.get("/dataRetrieve", (req, res) => {
+  res.send(data);
 });
 
 // All other GET requests not handled before will return our React app
