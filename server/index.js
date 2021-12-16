@@ -52,6 +52,15 @@ app.get("/dataRetrieve", (req, res) => {
   res.send(data);
 });
 
+app.get("/resetData", (req, res) => {
+  data = [
+    {
+      name: "Temp 1",
+      Temp: 73,
+    },
+  ];
+});
+
 //All other GET requests not handled before will return our React app
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../client/public", "index.html"));

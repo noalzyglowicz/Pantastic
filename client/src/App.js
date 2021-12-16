@@ -127,18 +127,6 @@ function App() {
       name: "Temp 1",
       Temp: 75,
     },
-    {
-      name: "Temp 2",
-      Temp: 100,
-    },
-    {
-      name: "Temp 3",
-      Temp: 175,
-    },
-    {
-      name: "Temp 4",
-      Temp: 130,
-    },
   ]);
 
   //When temperature changes check if it is a danger temperature and show visual concern to the user via flashing image and text
@@ -162,6 +150,14 @@ function App() {
     if (res.data.length > data.length) {
       updateDisplay(res.data[res.data.length - 1].Temp);
     }
+  }
+
+  async function resetData() {
+    const res = await axios.get("/resetData");
+    setData({
+      name: "Temp 1",
+      Temp: 75,
+    });
   }
 
   function updateDisplay(value) {
@@ -232,6 +228,9 @@ function App() {
               </button>
               <button className="dataButton" onClick={updateData}>
                 Console Log Data
+              </button>
+              <button className="dataButton" onClick={resetData}>
+                Reset Data
               </button>
             </div>
             {danger ? (
