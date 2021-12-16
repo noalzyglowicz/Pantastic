@@ -1,9 +1,6 @@
-//The code works but I apologize for how potato the code/component/function structure is at the moment lol
-
 import "./App.css";
-
 import React, { useEffect, useState } from "react";
-import { useEffectOnce, useInterval } from "react-use";
+import { useInterval } from "react-use";
 import {
   LineChart,
   Line,
@@ -116,7 +113,9 @@ var blinkTab = function (message) {
   }
 };
 
+//Function that serves as React component for the entire app
 function App() {
+  //Reactjs state management variables
   const [temperature, setTemperature] = useState(75);
   const [isF, setIsF] = useState(true); //true is fahrenheit
   const [textTemperature, setTextTemperature] = useState(75);
@@ -141,31 +140,22 @@ function App() {
       Temp: 130,
     },
   ]);
-  //const [sampleData, setSampleData] = useState(0);
 
-  // function updateText() {
-  //   setSampleData(sampleData + 1);
-  // }
-
-  // let nIntervId;
-  // nIntervId = setInterval(() => updateText(), 2000);
-
-  // useEffectOnce(() => {
-  //   nIntervId = setInterval(() => updateText(), 2000);
-  // });
-
+  //When temperature changes check if it is a danger temperature and show visual concern to the user via flashing image and text
   useEffect(() => {
     if (temperature > 300) {
       blinkTab("🔥Fire🔥");
     }
   });
 
+  //Poll server for new data sent by microcontroller
   useInterval(async () => updateData(), 2000);
 
   let divStyle = {
     color: color,
   };
 
+  //Axios used by client to call server api
   async function updateData() {
     const res = await axios.get("/dataRetrieve");
     setData(res.data);
@@ -204,12 +194,7 @@ function App() {
     console.log(newData);
   }
 
-  // function newDataArray(dataValue) {
-  //   let newData = data.slice();
-  //   newData.push({ name: "Temp " + count.toString(), Temp: dataValue });
-  //   return newData;
-  // }
-
+  //Functions to handle change on button clicks
   function handleChange(e) {
     setTemperature(e.target.value);
   }
@@ -218,6 +203,7 @@ function App() {
     setDanger(!danger);
   }
 
+  //Template for how html should syntactically/visually display components
   return (
     <>
       <div className="App">
